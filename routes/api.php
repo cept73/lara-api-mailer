@@ -22,7 +22,7 @@ Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->post('/send-message', [ApiController::class, 'sendMessage']);
 
     Route::prefix('user')->middleware('guest')->group(function () {
-        Route::any('login', [ApiController::class, 'login']);
-        Route::any('register', [ApiController::class, 'register']);
+        Route::post('login', [ApiController::class, 'login']);
+        Route::post('register', [ApiController::class, 'register']);
     });
 });
