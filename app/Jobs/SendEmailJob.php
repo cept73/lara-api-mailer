@@ -4,10 +4,8 @@ namespace App\Jobs;
 
 use App\Mail\UserMail;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Mail\Mailer;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Mail;
@@ -21,10 +19,8 @@ class SendEmailJob implements ShouldQueue
      *
      * @return void
      */
-    public function __construct(
-        protected UserMail $mail
-    ) {
-        //
+    public function __construct(protected UserMail $mail)
+    {
     }
 
     /**
