@@ -24,51 +24,52 @@ class ApiController extends Controller
     {
         try {
             $attributes = $request->validate(self::getRulesLoginFields());
+
             if (!Auth::attempt($attributes)) {
                 throw new AuthenticationException(__('Credentials not match'));
             }
+
+            /** @var User $user */
+            $user = auth()->user();
+            $token = $user->createToken(User::TOKEN_NAME)->plainTextToken;
+
+            return self::success(['token' => $token]);
         } catch (Throwable $e) {
             return self::error(self::STATUS_UNAUTHORIZED, $e->getMessage());
         }
-
-        /** @var User $user */
-        $user = auth()->user();
-        $token = $user->createToken(User::TOKEN_NAME)->plainTextToken;
-
-        return self::success(['token' => $token]);
     }
 
     public static function register(): JsonResponse
     {
         try {
             $attributes = request()->validate(self::getRulesRegistrationFields());
+
+            /** @var User $newUser */
+            $newUser = User::create($attributes);
+
+            auth()->login($newUser);
+
+            return self::success(['user_id' => $newUser->id]);
         } catch (Throwable $e) {
             return self::error(self::STATUS_UNAUTHORIZED, $e->getMessage());
         }
-
-        /** @var User $newUser */
-        $newUser = User::create($attributes);
-
-        auth()->login($newUser);
-
-        return self::success(['user_id' => $newUser->id]);
     }
 
     public static function sendMessage(Request $request): JsonResponse
     {
         try {
-            $params = $request->validate(self::getRulesSendMessageFields());
+            $attributes = $request->validate(self::getRulesSendMessageFields());
+
+            $userEmail = new UserMail($attributes['email'], $attributes['subject'], $attributes['message']);
+
+            $sendEmailJob = new SendEmailJob($userEmail);
+
+            dispatch($sendEmailJob);
+
+            return self::success(null, 'Job added');
         } catch (Throwable $e) {
             return self::error(self::STATUS_BAD_REQUEST, $e->getMessage());
         }
-
-        $userEmail = new UserMail($params['email'], $params['subject'], $params['message']);
-
-        $sendEmailJob = new SendEmailJob($userEmail);
-
-        dispatch($sendEmailJob);
-
-        return self::success(null, 'Job added');
     }
 
     protected static function getRulesLoginFields(): array
