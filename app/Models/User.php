@@ -1,9 +1,9 @@
-<?php
+<?php /** @noinspection SpellCheckingInspection */
 
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Foundation\Auth\User as AuthUser;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
@@ -18,11 +18,11 @@ use Laravel\Sanctum\HasApiTokens;
  * @property int $created_at
  * @property int $updated_at
  */
-class User extends Authenticatable
+class User extends AuthUser
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    public const EXPIRATION_MINUTES_FOR_API_ACCESS = 1;
+    public const TOKEN_NAME = 'API Token';
 
     /**
      * The attributes that are mass assignable.
@@ -59,9 +59,4 @@ class User extends Authenticatable
         'name',
         'email',
     ];
-
-    public function personalAccessToken()
-    {
-        return $this->hasOne(PersonalAccessTokens::class);
-    }
 }

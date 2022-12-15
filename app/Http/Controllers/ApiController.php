@@ -6,6 +6,7 @@ use App\Jobs\SendEmailJob;
 use App\Mail\UserMail;
 use App\Models\User;
 use App\Traits\ApiResponse;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,18 +23,17 @@ class ApiController extends Controller
     public static function login(Request $request): JsonResponse
     {
         try {
-            $params = $request->validate(self::getRulesLoginFields());
+            $attributes = $request->validate(self::getRulesLoginFields());
+            if (!Auth::attempt($attributes)) {
+                throw new AuthenticationException(__('Credentials not match'));
+            }
         } catch (Throwable $e) {
             return self::error(self::STATUS_UNAUTHORIZED, $e->getMessage());
         }
 
-        if (!Auth::attempt($params)) {
-            return self::error(self::STATUS_UNAUTHORIZED, 'Credentials not match');
-        }
-
         /** @var User $user */
         $user = auth()->user();
-        $token = $user->createToken('API Token')->plainTextToken;
+        $token = $user->createToken(User::TOKEN_NAME)->plainTextToken;
 
         return self::success(['token' => $token]);
     }
